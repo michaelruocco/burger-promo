@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: burger-promo
+  main:
+    banner-mode: off
+
+info:
+  app:
+    name: ${spring.application.name}
+
+management:
+  endpoint:
+    health:
+      show-details: always
