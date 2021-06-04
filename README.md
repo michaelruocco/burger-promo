@@ -13,7 +13,7 @@
 
 ## Overview
 
-This repo contains a toy implementation for a backend promotion API where each promo can be used exactly
+This repo contains a toy implementation for a backend promo API where each promo can be used exactly
 once per account and has a max number of claims available.
 
 ## Useful Commands

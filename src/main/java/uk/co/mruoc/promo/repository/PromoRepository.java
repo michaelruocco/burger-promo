@@ -1,13 +1,13 @@
 package uk.co.mruoc.promo.repository;
 
-import uk.co.mruoc.promo.entity.Promotion;
+import uk.co.mruoc.promo.entity.Promo;
 
 import java.util.Optional;
 
 public interface PromoRepository {
 
-    void create(Promotion promotion);
+    void save(Promo promo);
 
-    Optional<Promotion> find(String promoId);
+    Optional<Promo> find(String promoId);
 
 }

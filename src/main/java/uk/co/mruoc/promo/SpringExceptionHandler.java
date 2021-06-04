@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import uk.co.mruoc.promo.entity.AlreadyClaimedException;
 import uk.co.mruoc.promo.entity.PromoFinishedException;
-import uk.co.mruoc.promo.usecase.PromotionNotFoundException;
+import uk.co.mruoc.promo.usecase.PromoNotFoundException;
 
 @RequiredArgsConstructor
 @ControllerAdvice
@@ -25,8 +25,8 @@ public class SpringExceptionHandler {
         return new ResponseEntity<>("none remaining", HttpStatus.GONE);
     }
 
-    @ExceptionHandler(PromotionNotFoundException.class)
-    public ResponseEntity<String> notFound(PromotionNotFoundException cause) {
+    @ExceptionHandler(PromoNotFoundException.class)
+    public ResponseEntity<String> notFound(PromoNotFoundException cause) {
         var message = String.format("promo %s not found", cause.getMessage());
         return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }

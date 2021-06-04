@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.co.mruoc.promo.entity.Promotion;
+import uk.co.mruoc.promo.entity.Promo;
 import uk.co.mruoc.promo.usecase.PromoRequest;
 import uk.co.mruoc.promo.usecase.PromoService;
 
@@ -19,7 +19,7 @@ public class PromoController {
     private final PromoService service;
 
     @GetMapping("/{promoId}")
-    public Promotion getPromo(@PathVariable("promoId") String promoId) {
+    public Promo getPromo(@PathVariable("promoId") String promoId) {
         return service.get(promoId);
     }
 

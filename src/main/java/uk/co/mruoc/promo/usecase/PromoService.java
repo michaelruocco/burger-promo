@@ -1,7 +1,7 @@
 package uk.co.mruoc.promo.usecase;
 
 import lombok.RequiredArgsConstructor;
-import uk.co.mruoc.promo.entity.Promotion;
+import uk.co.mruoc.promo.entity.Promo;
 import uk.co.mruoc.promo.repository.PromoRepository;
 
 @RequiredArgsConstructor
@@ -9,8 +9,8 @@ public class PromoService {
 
     private final PromoRepository repository;
 
-    public void create(Promotion promotion) {
-        repository.create(promotion);
+    public void save(Promo promo) {
+        repository.save(promo);
     }
 
     public boolean anyRemaining(PromoRequest request) {
@@ -18,11 +18,12 @@ public class PromoService {
     }
 
     public void claim(PromoRequest request) {
-        get(request.getPromoId()).claim(request.getAccountId());
+        var promo = get(request.getPromoId());
+        repository.save(promo.claim(request.getAccountId()));
     }
 
-    public Promotion get(String promoId) {
-        return repository.find(promoId).orElseThrow(() -> new PromotionNotFoundException(promoId));
+    public Promo get(String promoId) {
+        return repository.find(promoId).orElseThrow(() -> new PromoNotFoundException(promoId));
     }
 
 }

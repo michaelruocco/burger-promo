@@ -65,12 +65,15 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-autoconfigure:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
     implementation "org.springframework:spring-context:${springVersion}"
     implementation "org.springframework:spring-web:${springVersion}"
+    implementation "org.hibernate:hibernate-core:5.5.0.Final"
+    implementation "mysql:mysql-connector-java:8.0.25"
+    runtimeOnly "com.h2database:h2:1.4.200"
 
     testRuntimeOnly "org.slf4j:slf4j-simple:${slf4jVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-
 }
 
 javadoc.options.addStringOption('Xdoclint:none', '-quiet')
