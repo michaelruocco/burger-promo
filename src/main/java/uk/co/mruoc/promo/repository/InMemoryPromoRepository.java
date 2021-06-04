@@ -2,8 +2,6 @@ package uk.co.mruoc.promo.repository;
 
 import lombok.RequiredArgsConstructor;
 import uk.co.mruoc.promo.entity.Promotion;
-import uk.co.mruoc.promo.usecase.PromoRequest;
-import uk.co.mruoc.promo.usecase.PromotionNotFoundException;
 
 import java.util.Map;
 import java.util.Optional;
