@@ -1,11 +1,9 @@
-package uk.co.mruoc.promo;
+package uk.co.mruoc.promo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.co.mruoc.promo.entity.account.AccountFactory;
 import uk.co.mruoc.promo.entity.promo.PromoFactory;
-import uk.co.mruoc.promo.repository.account.inmemory.InMemoryAccountRepository;
-import uk.co.mruoc.promo.repository.promo.inmemory.InMemoryPromoRepository;
 import uk.co.mruoc.promo.usecase.account.AccountPopulator;
 import uk.co.mruoc.promo.usecase.account.AccountRepository;
 import uk.co.mruoc.promo.usecase.account.AccountService;
@@ -16,7 +14,7 @@ import uk.co.mruoc.promo.usecase.promo.PromoPopulator;
 import uk.co.mruoc.promo.usecase.promo.PromoService;
 
 @Configuration
-public class SpringConfig {
+public class SpringDomainConfig {
 
     @Bean
     public AccountFactory accountFactory() {
@@ -72,16 +70,6 @@ public class SpringConfig {
         return PromoService.builder()
                 .repository(repository)
                 .build();
-    }
-
-    @Bean
-    public AccountRepository inMemoryAccountRepository() {
-        return new InMemoryAccountRepository();
-    }
-
-    @Bean
-    public PromoRepository inMemoryPromoRepository() {
-        return new InMemoryPromoRepository();
     }
 
 }

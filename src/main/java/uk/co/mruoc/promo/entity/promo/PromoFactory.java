@@ -5,7 +5,7 @@ public class PromoFactory {
     public Promo buildFreeBurgers() {
         return Promo.builder()
                 .id("free-burgers")
-                .totalAllowedClaims(6000000)
+                .totalAllowedClaims(50000)
                 .claimsAllowedPerAccount(1)
                 .build();
     }

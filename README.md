@@ -1,4 +1,4 @@
-# Library Template
+# Burger Promo
 
 [![Build](https://github.com/michaelruocco/burger-promo/workflows/pipeline/badge.svg)](https://github.com/michaelruocco/burger-promo/actions)
 [![codecov](https://codecov.io/gh/michaelruocco/burger-promo/branch/master/graph/badge.svg?token=FWDNP534O7)](https://codecov.io/gh/michaelruocco/burger-promo)
@@ -18,6 +18,7 @@ once per account and has a max number of claims available.
 
 ## Useful Commands
 
+Build code and docker image:
 ```gradle
 // cleans build directories
 // prints currentVersion
@@ -26,9 +27,24 @@ once per account and has a max number of claims available.
 // runs tests
 // checks for gradle issues
 // checks dependency versions
-./gradlew clean currentVersion dependencyUpdates lintGradle spotlessApply build
+./gradlew clean currentVersion dependencyUpdates spotlessApply build buildImage
 ```
 
+
+Run service with persistence stubbed with using in memory repository implementation:
+```gradle
+./gradlew bootRun
+```
+
+
+Run service within docker image using mongo repository implementation:
+```gradle
+./gradlew clean spotlessApply build buildImage composeUp
+```
+And `./gradlew composeDown` to tear down the containers again afterwards
+
+
+Run performance test with more than one attempt per account:
 ```jmeter
 mkdir -p build/reports/jmeter/html;
 rm -rf build/reports/jmeter/log/*;
@@ -40,6 +56,8 @@ jmeter --nongui \
        --reportoutputfolder build/reports/jmeter/html
 ```
 
+
+Run simple performance test with account numbers unique and incrementing sequentially throughout test:
 ```jmeter
 mkdir -p build/reports/jmeter/html;
 rm -rf build/reports/jmeter/log/*;

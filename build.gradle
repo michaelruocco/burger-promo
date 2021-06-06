@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springBootVersion = "2.5.0"
+        springBootVersion = "2.4.5"
     }
     repositories {
         maven {
@@ -71,9 +71,12 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
     implementation "org.springframework:spring-context"
     implementation "org.springframework:spring-web"
-    implementation "mysql:mysql-connector-java:8.0.25"
     implementation "com.github.michaelruocco:duration-logger:0.1.0"
     implementation "org.apache.commons:commons-lang3:3.12.0"
+    implementation "org.mongodb:mongo-java-driver:3.12.8"
+    implementation("com.github.dalet-oss:mongobee:1.0.4") {
+        exclude module: "mongo-java-driver"
+    }
 
     testRuntimeOnly "org.slf4j:slf4j-simple:${slf4jVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
@@ -85,7 +88,7 @@ springBoot {
 
 bootRun {
     systemProperties = System.getProperties()
-    //systemProperty "spring.profiles.active", System.properties.getOrDefault("spring.profiles.active", "stubbed")
+    systemProperty "spring.profiles.active", System.properties.getOrDefault("spring.profiles.active", "stubbed")
     systemProperty "server.port", System.properties.getOrDefault("server.port", "8081")
 }
 
