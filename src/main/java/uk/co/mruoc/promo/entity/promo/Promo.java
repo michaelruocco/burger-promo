@@ -21,19 +21,29 @@ public class Promo {
         return totalClaims >= totalAllowedClaims;
     }
 
-    public Promo reset() {
-        return toBuilder().totalClaims(0).build();
-    }
-
     public long getRemaining() {
         return totalAllowedClaims - totalClaims;
+    }
+
+    public Promo reset() {
+        return toBuilder()
+                .totalClaims(0)
+                .version(calculateNextVersion())
+                .build();
     }
 
     public Promo claim() {
         if (isFinished()) {
             throw new PromoFinishedException(id);
         }
-        return toBuilder().totalClaims(totalClaims + 1).build();
+        return toBuilder()
+                .totalClaims(totalClaims + 1)
+                .version(calculateNextVersion())
+                .build();
+    }
+
+    private long calculateNextVersion() {
+        return version + 1;
     }
 
 }

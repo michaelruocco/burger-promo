@@ -7,6 +7,7 @@ import uk.co.mruoc.promo.entity.account.AccountNotFoundException;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -34,4 +35,9 @@ public class AccountService {
         repository.save(account);
     }
 
+    public void resetPromo(String promoId) {
+        saveAll(repository.findAccountsByClaimedPromo(promoId)
+                .map(account -> account.removeClaimsFor(promoId))
+                .collect(Collectors.toList()));
+    }
 }

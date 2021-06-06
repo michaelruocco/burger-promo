@@ -16,7 +16,7 @@ public class PromoFacade {
     }
 
     public Promo reset(String promoId) {
-        return promoService.reset(promoId);
+        return claimService.reset(promoId);
     }
 
     public void validateAvailable(PromoClaimRequest request) {

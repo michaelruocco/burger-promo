@@ -8,9 +8,7 @@ public interface PromoRepository {
 
     void save(Promo promo);
 
-    void claim(String promoId);
-
-    void reset(String promoId);
+    boolean exists(String promoId);
 
     Optional<Promo> find(String promoId);
 

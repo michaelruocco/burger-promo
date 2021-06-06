@@ -2,15 +2,10 @@ package uk.co.mruoc.promo;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import uk.co.mruoc.promo.entity.account.AccountFactory;
 import uk.co.mruoc.promo.entity.promo.PromoFactory;
-import uk.co.mruoc.promo.repository.account.mysql.AccountEntityRepository;
-import uk.co.mruoc.promo.repository.account.memory.InMemoryAccountRepository;
-import uk.co.mruoc.promo.repository.account.mysql.MySqlAccountRepository;
-import uk.co.mruoc.promo.repository.promo.memory.InMemoryPromoRepository;
-import uk.co.mruoc.promo.repository.promo.mysql.MySqlPromoRepository;
-import uk.co.mruoc.promo.repository.promo.mysql.PromoEntityRepository;
+import uk.co.mruoc.promo.repository.account.inmemory.InMemoryAccountRepository;
+import uk.co.mruoc.promo.repository.promo.inmemory.InMemoryPromoRepository;
 import uk.co.mruoc.promo.usecase.account.AccountPopulator;
 import uk.co.mruoc.promo.usecase.account.AccountRepository;
 import uk.co.mruoc.promo.usecase.account.AccountService;
@@ -19,8 +14,6 @@ import uk.co.mruoc.promo.usecase.PromoFacade;
 import uk.co.mruoc.promo.usecase.promo.PromoRepository;
 import uk.co.mruoc.promo.usecase.promo.PromoPopulator;
 import uk.co.mruoc.promo.usecase.promo.PromoService;
-
-import java.util.concurrent.Executors;
 
 @Configuration
 public class SpringConfig {
@@ -78,32 +71,15 @@ public class SpringConfig {
     public PromoService promoService(PromoRepository repository) {
         return PromoService.builder()
                 .repository(repository)
-                .executorService(Executors.newFixedThreadPool(100))
                 .build();
     }
 
     @Bean
-    @Profile("!stubbed")
-    public AccountRepository mysqlAccountRepository(AccountEntityRepository repository) {
-        return MySqlAccountRepository.builder()
-                .accountRepository(repository)
-                .build();
-    }
-
-    @Bean
-    @Profile("stubbed")
     public AccountRepository inMemoryAccountRepository() {
         return new InMemoryAccountRepository();
     }
 
     @Bean
-    @Profile("!stubbed")
-    public PromoRepository mysqlPromoRepository(PromoEntityRepository promoEntityRepository) {
-        return new MySqlPromoRepository(promoEntityRepository);
-    }
-
-    @Bean
-    @Profile("stubbed")
     public PromoRepository inMemoryPromoRepository() {
         return new InMemoryPromoRepository();
     }

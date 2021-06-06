@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
+import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoFactory;
 
 
@@ -18,15 +19,19 @@ public class PromoPopulator implements ApplicationListener<ContextRefreshedEvent
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         var promo = factory.buildFreeBurgers();
-        if (service.find(promo.getId()).isEmpty()) {
-            log.info("creating promo {}", promo);
-            service.create(promo);
-        }
+        createIfRequired(promo);
     }
 
     @Override
     public int getOrder() {
         return 10;
+    }
+
+    private void createIfRequired(Promo promo) {
+        if (service.find(promo.getId()).isEmpty()) {
+            log.info("creating promo {}", promo);
+            service.create(promo);
+        }
     }
 
 }

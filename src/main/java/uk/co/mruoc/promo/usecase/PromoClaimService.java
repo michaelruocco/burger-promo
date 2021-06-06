@@ -1,6 +1,7 @@
 package uk.co.mruoc.promo.usecase;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import uk.co.mruoc.promo.entity.account.Account;
 import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoAlreadyClaimedException;
@@ -10,37 +11,48 @@ import uk.co.mruoc.promo.usecase.account.AccountService;
 import uk.co.mruoc.promo.usecase.promo.PromoService;
 
 @Builder
+@Slf4j
 public class PromoClaimService {
 
-    private final AccountService accountService;
     private final PromoService promoService;
+    private final AccountService accountService;
 
-    public void claim(PromoClaimRequest request) {
+    public synchronized void claim(PromoClaimRequest request) {
+        var promo = promoService.forceFind(request.getPromoId());
         var account = accountService.forceFind(request.getAccountId());
-        validateAvailable(request, account);
-        accountService.save(account.claim(request.getPromoId()));
-        promoService.claim(request);
+        validateAvailable(promo, account);
+        var updatedAccount = account.claim(request.getPromoId());
+        persistClaim(promo, updatedAccount);
     }
 
-    //TODO add reset method that will remove promo from all accounts
+    public synchronized Promo reset(String promoId) {
+        var resetPromo = promoService.reset(promoId);
+        accountService.resetPromo(promoId);
+        return resetPromo;
+    }
 
     public void validateAvailable(PromoClaimRequest request) {
+        var promo = promoService.forceFind(request.getPromoId());
         var account = accountService.forceFind(request.getAccountId());
-        validateAvailable(request, account);
+        validateAvailable(promo, account);
     }
 
-    private void validateAvailable(PromoClaimRequest request, Account account) {
-        var promo = promoService.forceFind(request.getPromoId());
-        if (!isAvailableForAccount(account, promo)) {
-            throw new PromoAlreadyClaimedException(request.getPromoId(), request.getAccountId());
+    private void validateAvailable(Promo promo, Account account) {
+        if (!isPromoAvailableForAccount(promo, account)) {
+            throw new PromoAlreadyClaimedException(promo.getId(), account.getId());
         }
         if (promo.isFinished()) {
             throw new PromoFinishedException(promo.getId());
         }
     }
 
-    private boolean isAvailableForAccount(Account account, Promo promo) {
+    private boolean isPromoAvailableForAccount(Promo promo, Account account) {
         return account.getClaims(promo.getId()) < promo.getClaimsAllowedPerAccount();
+    }
+
+    private synchronized void persistClaim(Promo promo, Account updatedAccount) {
+        promoService.claim(promo);
+        accountService.save(updatedAccount);
     }
 
 }
