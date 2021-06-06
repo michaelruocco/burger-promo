@@ -51,6 +51,14 @@ scmVersion {
 }
 project.version = scmVersion.version
 
+configurations {
+    runtimeOnly.exclude module: "slf4j-simple"
+    [apiElements, runtimeElements].each {
+        it.outgoing.artifacts.removeIf { it.buildDependencies.getDependencies(null).contains(jar) }
+        it.outgoing.artifact(bootJar)
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -185,7 +193,7 @@ publishing {
             from components.java
             pom.withXml {
                 def root = asNode()
-                root.appendNode("description", "Template repo to speed up creating new library projects")
+                root.appendNode("description", "Burger promotion backend apis")
                 root.appendNode("name", project.name)
                 root.appendNode("url", gitUrl)
                 root.children().last() + pomConfig
