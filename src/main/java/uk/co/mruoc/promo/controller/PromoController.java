@@ -13,10 +13,6 @@ import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.usecase.PromoFacade;
 
-import java.time.Instant;
-
-import static uk.co.mruoc.duration.calculator.DurationCalculatorUtils.millisBetweenNowAnd;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/promos")
@@ -37,26 +33,16 @@ public class PromoController {
 
     @GetMapping("/{promoId}/accounts/{accountId}")
     public ResponseEntity<Void> isAvailable(@PathVariable("promoId") String promoId, @PathVariable("accountId") String accountId) {
-        var start = Instant.now();
-        try {
-            PromoClaimRequest request = toRequest(promoId, accountId);
-            promoFacade.validateAvailable(request);
-            return ResponseEntity.ok().build();
-        } finally {
-            log.info("is available took {}ms", millisBetweenNowAnd(start));
-        }
+        PromoClaimRequest request = toRequest(promoId, accountId);
+        promoFacade.validateAvailable(request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{promoId}/accounts/{accountId}")
     public ResponseEntity<Void> claim(@PathVariable("promoId") String promoId, @PathVariable("accountId") String accountId) {
-        var start = Instant.now();
-        try {
-            PromoClaimRequest request = toRequest(promoId, accountId);
-            promoFacade.claim(request);
-            return ResponseEntity.accepted().build();
-        } finally {
-            log.info("claim took {}ms", millisBetweenNowAnd(start));
-        }
+        PromoClaimRequest request = toRequest(promoId, accountId);
+        promoFacade.claim(request);
+        return ResponseEntity.accepted().build();
     }
 
     private static PromoClaimRequest toRequest(String promoId, String accountId) {

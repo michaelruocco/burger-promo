@@ -1,4 +1,4 @@
-package uk.co.mruoc.promo.repository.promo;
+package uk.co.mruoc.promo.repository.promo.memory;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.co.mruoc.promo.entity.promo.Promo;

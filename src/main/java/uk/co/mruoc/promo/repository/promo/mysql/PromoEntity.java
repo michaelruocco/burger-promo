@@ -1,4 +1,4 @@
-package uk.co.mruoc.promo.repository.promo;
+package uk.co.mruoc.promo.repository.promo.mysql;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

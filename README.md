@@ -28,6 +28,7 @@ once per account and has a max number of claims available.
 // checks dependency versions
 ./gradlew clean currentVersion dependencyUpdates lintGradle spotlessApply build
 ```
+
 ```jmeter
 mkdir -p build/reports/jmeter/html;
 rm -rf build/reports/jmeter/log/*;
@@ -35,6 +36,17 @@ jmeter --nongui \
        --forceDeleteResultFile \
        --testfile src/performance-test/free-burger-promo.jmx \
        --logfile build/reports/jmeter/log/free-burger-promo.jtl \
+       --reportatendofloadtests \
+       --reportoutputfolder build/reports/jmeter/html
+```
+
+```jmeter
+mkdir -p build/reports/jmeter/html;
+rm -rf build/reports/jmeter/log/*;
+jmeter --nongui \
+       --forceDeleteResultFile \
+       --testfile src/performance-test/free-burger-promo-sequential.jmx \
+       --logfile build/reports/jmeter/log/free-burger-promo-sequential.jtl \
        --reportatendofloadtests \
        --reportoutputfolder build/reports/jmeter/html
 ```

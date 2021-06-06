@@ -1,14 +1,12 @@
-package uk.co.mruoc.promo.repository.account;
+package uk.co.mruoc.promo.repository.account.mysql;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Version;
-import java.util.Collection;
 
 @Data
 @Entity
@@ -19,8 +17,9 @@ public class AccountEntity {
     @Id
     private String id;
 
-    @ElementCollection
-    private Collection<String> claimedPromos;
+    private String claimedPromos;
+//    @ElementCollection
+//    private Collection<String> claimedPromos;
 
     @Version
     private long version;
