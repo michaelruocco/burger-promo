@@ -1,0 +1,29 @@
+version: '3'
+services:
+
+  promo-mysql:
+    image: mysql
+    container_name: promo-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_DATABASE: promo
+      MYSQL_ROOT_PASSWORD: welcome01
+
+  burger-promo-app:
+    image: michaelruocco/burger-promo:${APP_VERSION}
+    container_name: burger-promo-app
+    #mem_limit: 2048m
+    #mem_reservation: 2048m
+    restart: on-failure:3
+    ports:
+      - 8081:80
+    environment:
+      - SERVER_PORT=80
+      - SPRING_DATASOURCE_URL=jdbc:mysql://promo-mysql:3306/promo?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=welcome01
+    depends_on:
+      - promo-mysql
