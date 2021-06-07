@@ -4,7 +4,7 @@ import com.mongodb.BasicDBObject;
 import org.bson.conversions.Bson;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.in;
+import static com.mongodb.client.model.Filters.gt;
 
 public class AccountQueryBuilder {
 
@@ -13,7 +13,7 @@ public class AccountQueryBuilder {
     }
 
     public Bson toFindByClaimedPromoQuery(String promoId) {
-        return in("claimedPromos", promoId);
+        return gt(PromoClaimsFieldName.build(promoId), 0);
     }
 
     public Bson all() {

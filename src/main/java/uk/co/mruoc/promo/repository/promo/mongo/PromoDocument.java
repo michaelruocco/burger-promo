@@ -17,6 +17,5 @@ public class PromoDocument {
     private long totalAllowedClaims;
     private long claimsAllowedPerAccount;
     private long totalClaims;
-    private long version;
 
 }

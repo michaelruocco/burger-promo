@@ -98,8 +98,9 @@ springBoot {
 
 bootRun {
     systemProperties = System.getProperties()
-    systemProperty "spring.profiles.active", System.properties.getOrDefault("spring.profiles.active", "stubbed")
     systemProperty "server.port", System.properties.getOrDefault("server.port", "8081")
+    //systemProperty "spring.profiles.active", System.properties.getOrDefault("spring.profiles.active", "stubbed")
+    systemProperty "spring.data.mongodb.uri", "mongodb://promo-user:welcome01@localhost:27017/promo-local"
 }
 
 javadoc.options.addStringOption('Xdoclint:none', '-quiet')

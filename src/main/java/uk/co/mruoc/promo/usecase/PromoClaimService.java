@@ -10,6 +10,10 @@ import uk.co.mruoc.promo.entity.promo.PromoFinishedException;
 import uk.co.mruoc.promo.usecase.account.AccountService;
 import uk.co.mruoc.promo.usecase.promo.PromoService;
 
+import java.time.Instant;
+
+import static uk.co.mruoc.duration.logger.MongoMdcDurationLoggerUtils.logDuration;
+
 @Builder
 @Slf4j
 public class PromoClaimService {
@@ -17,24 +21,34 @@ public class PromoClaimService {
     private final PromoService promoService;
     private final AccountService accountService;
 
-    public synchronized void claim(PromoClaimRequest request) {
-        var promo = promoService.forceFind(request.getPromoId());
-        var account = accountService.forceFind(request.getAccountId());
-        validateAvailable(promo, account);
-        var updatedAccount = account.claim(request.getPromoId());
-        persistClaim(promo, updatedAccount);
+    public void claim(PromoClaimRequest request) {
+        var start = Instant.now();
+        try {
+            var promo = promoService.forceFind(request.getPromoId());
+            var account = accountService.forceFind(request.getAccountId());
+            validateAvailable(promo, account);
+            promoService.claim(request, promo);
+            accountService.claim(request);
+        } finally {
+            logDuration("service-claim", start);
+        }
     }
 
-    public synchronized Promo reset(String promoId) {
+    public Promo reset(String promoId) {
         var resetPromo = promoService.reset(promoId);
-        accountService.resetPromo(promoId);
+        accountService.resetAccountClaims(promoId);
         return resetPromo;
     }
 
     public void validateAvailable(PromoClaimRequest request) {
-        var promo = promoService.forceFind(request.getPromoId());
-        var account = accountService.forceFind(request.getAccountId());
-        validateAvailable(promo, account);
+        var start = Instant.now();
+        try {
+            var promo = promoService.forceFind(request.getPromoId());
+            var account = accountService.forceFind(request.getAccountId());
+            validateAvailable(promo, account);
+        } finally {
+            logDuration("check-available", start);
+        }
     }
 
     private void validateAvailable(Promo promo, Account account) {
@@ -47,12 +61,7 @@ public class PromoClaimService {
     }
 
     private boolean isPromoAvailableForAccount(Promo promo, Account account) {
-        return account.getClaims(promo.getId()) < promo.getClaimsAllowedPerAccount();
-    }
-
-    private synchronized void persistClaim(Promo promo, Account updatedAccount) {
-        promoService.claim(promo);
-        accountService.save(updatedAccount);
+        return account.getClaimsCount(promo.getId()) < promo.getClaimsAllowedPerAccount();
     }
 
 }

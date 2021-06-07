@@ -10,7 +10,6 @@ public class AccountFactory {
     public Collection<Account> buildAccounts(int numberToBuild) {
         return IntStream.rangeClosed(1, numberToBuild)
                 .mapToObj(Integer::toString)
-                //.map(s -> StringUtils.leftPad(s, 8, '0'))
                 .map(this::buildAccount)
                 .collect(Collectors.toList());
     }

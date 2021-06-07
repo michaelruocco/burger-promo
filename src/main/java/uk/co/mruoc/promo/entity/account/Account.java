@@ -3,9 +3,10 @@ package uk.co.mruoc.promo.entity.account;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Builder(toBuilder = true)
 @Data
@@ -14,40 +15,32 @@ public class Account {
     private final String id;
 
     @Builder.Default
-    private final Collection<String> claimedPromos = Collections.emptyList();
+    private final Map<String, AtomicLong> promoClaims = new ConcurrentHashMap<>();
 
-    @Builder.Default
-    private final long version = 0;
+    public void claim(String promoId) {
+        getAtomicClaimsCount(promoId).incrementAndGet();
+    }
+
+    public void resetClaims(String promoId) {
+        getAtomicClaimsCount(promoId).set(0);
+    }
 
     public boolean hasClaims(String promoId) {
-        return claimedPromos.stream().anyMatch(claimedId -> claimedId.equals(promoId));
+        return getClaimsCount(promoId) > 0;
     }
 
-    public long getClaims(String promoId) {
-        return claimedPromos.stream().filter(claimedId -> claimedId.equals(promoId)).count();
+    public long getClaimsCount(String promoId) {
+        return getAtomicClaimsCount(promoId).get();
     }
 
-    public Account removeClaimsFor(String promoId) {
-        Collection<String> updatedClaimedPromos = new ArrayList<>(claimedPromos);
-        updatedClaimedPromos.remove(promoId);
-        return update(updatedClaimedPromos);
-    }
-
-    public Account claim(String promoId) {
-        Collection<String> updatedClaimedPromos = new ArrayList<>(claimedPromos);
-        updatedClaimedPromos.add(promoId);
-        return update(updatedClaimedPromos);
-    }
-
-    private Account update(Collection<String> updatedClaimedPromos) {
-        return toBuilder()
-                .claimedPromos(updatedClaimedPromos)
-                .version(calculateNextVersion())
-                .build();
-    }
-
-    private long calculateNextVersion() {
-        return version + 1;
+    private AtomicLong getAtomicClaimsCount(String promoId) {
+        Optional<AtomicLong> existingCount = Optional.ofNullable(promoClaims.get(promoId));
+        if (existingCount.isEmpty()) {
+            var newCount = new AtomicLong();
+            promoClaims.put(promoId, newCount);
+            return newCount;
+        }
+        return existingCount.get();
     }
 
 }

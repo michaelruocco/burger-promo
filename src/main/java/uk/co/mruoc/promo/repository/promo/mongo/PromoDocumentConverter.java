@@ -2,6 +2,8 @@ package uk.co.mruoc.promo.repository.promo.mongo;
 
 import uk.co.mruoc.promo.entity.promo.Promo;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class PromoDocumentConverter {
 
     public Promo toPromo(PromoDocument document) {
@@ -9,8 +11,7 @@ public class PromoDocumentConverter {
                 .id(document.getId())
                 .totalAllowedClaims(document.getTotalAllowedClaims())
                 .claimsAllowedPerAccount(document.getClaimsAllowedPerAccount())
-                .totalClaims(document.getTotalClaims())
-                .version(document.getVersion())
+                .totalClaims(new AtomicLong(document.getTotalClaims()))
                 .build();
     }
 
@@ -19,8 +20,7 @@ public class PromoDocumentConverter {
                 .id(promo.getId())
                 .totalAllowedClaims(promo.getTotalAllowedClaims())
                 .claimsAllowedPerAccount(promo.getClaimsAllowedPerAccount())
-                .totalClaims(promo.getTotalClaims())
-                .version(promo.getVersion())
+                .totalClaims(promo.getTotalClaims().get())
                 .build();
     }
 

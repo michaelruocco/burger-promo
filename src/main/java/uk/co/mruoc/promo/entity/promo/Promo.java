@@ -3,47 +3,38 @@ package uk.co.mruoc.promo.entity.promo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 @RequiredArgsConstructor
 @Data
-@Builder(toBuilder = true)
+@Builder
 @Slf4j
 public class Promo {
 
     private final String id;
     private final long totalAllowedClaims;
     private final long claimsAllowedPerAccount;
-    private final long totalClaims;
-    private final long version;
+
+    @With
+    @Builder.Default
+    private final AtomicLong totalClaims = new AtomicLong();
 
     public boolean isFinished() {
-        return totalClaims >= totalAllowedClaims;
+        return totalClaims.get() >= totalAllowedClaims;
     }
 
     public long getRemaining() {
-        return totalAllowedClaims - totalClaims;
+        long remaining = totalAllowedClaims - totalClaims.get();
+        return Math.max(remaining, 0);
     }
 
-    public Promo reset() {
-        return toBuilder()
-                .totalClaims(0)
-                .version(calculateNextVersion())
-                .build();
-    }
-
-    public Promo claim() {
+    public void validateFinished() {
         if (isFinished()) {
             throw new PromoFinishedException(id);
         }
-        return toBuilder()
-                .totalClaims(totalClaims + 1)
-                .version(calculateNextVersion())
-                .build();
-    }
-
-    private long calculateNextVersion() {
-        return version + 1;
     }
 
 }

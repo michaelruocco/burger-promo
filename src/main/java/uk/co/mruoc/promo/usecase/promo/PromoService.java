@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoAlreadyExistsException;
+import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.entity.promo.PromoNotFoundException;
 
 import java.util.Optional;
@@ -14,9 +15,9 @@ public class PromoService {
 
     private final PromoRepository repository;
 
-    public void claim(Promo promo) {
-        var updatedPromo = promo.claim();
-        repository.save(updatedPromo);
+    public void claim(PromoClaimRequest request, Promo promo) {
+        promo.validateFinished();
+        repository.claim(request);
     }
 
     public void create(Promo promo) {
@@ -24,14 +25,12 @@ public class PromoService {
         if (repository.exists(promoId)) {
             throw new PromoAlreadyExistsException(promoId);
         }
-        repository.save(promo);
+        repository.create(promo);
     }
 
     public Promo reset(String promoId) {
-        var promo = forceFind(promoId);
-        var resetPromo = promo.reset();
-        repository.save(resetPromo);
-        return resetPromo;
+        repository.reset(promoId);
+        return forceFind(promoId);
     }
 
     public Promo forceFind(String promoId) {

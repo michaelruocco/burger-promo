@@ -16,13 +16,12 @@ services:
   burger-promo-app:
     image: michaelruocco/burger-promo:${APP_VERSION}
     container_name: burger-promo-app
-    #mem_limit: 2048m
-    #mem_reservation: 2048m
-    restart: on-failure:3
+    mem_limit: 2048m
+    mem_reservation: 2048m
     ports:
       - 8081:80
     environment:
       - SERVER_PORT=80
-      - MONGO_CONNECTION_STRING=mongodb://promo-user:welcome01@promo-mongo:27017/promo-local
+      - MONGO_CONNECTION_STRING=mongodb://promo-user:welcome01@localhost:27017/promo-local
     depends_on:
       - promo-mongo

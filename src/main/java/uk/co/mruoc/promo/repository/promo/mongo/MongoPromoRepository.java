@@ -2,11 +2,11 @@ package uk.co.mruoc.promo.repository.promo.mongo;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.ReplaceOptions;
 import lombok.Builder;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import uk.co.mruoc.promo.entity.promo.Promo;
-import uk.co.mruoc.promo.usecase.promo.PromoOptimisticLockException;
+import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.usecase.promo.PromoRepository;
 
 import java.time.Instant;
@@ -17,7 +17,7 @@ import static uk.co.mruoc.duration.logger.MongoMdcDurationLoggerUtils.logDuratio
 @Builder
 public class MongoPromoRepository implements PromoRepository {
 
-    private final MongoCollection<PromoDocument> collection;
+    private final MongoCollection<PromoDocument> promoCollection;
 
     @Builder.Default
     private final PromoQueryBuilder queryBuilder = new PromoQueryBuilder();
@@ -26,29 +26,34 @@ public class MongoPromoRepository implements PromoRepository {
     private final PromoDocumentConverter promoConverter = new PromoDocumentConverter();
 
     @Override
-    public void save(Promo updated) {
+    public void claim(PromoClaimRequest request) {
         var start = Instant.now();
         try {
-            Optional<Promo> existing = find(updated.getId());
-            existing.ifPresent(promo -> validateUpdate(promo, updated));
-            PromoDocument document = promoConverter.toDocument(updated);
-            var query = queryBuilder.toFindByIdQuery(updated.getId());
-            var options = new ReplaceOptions().upsert(true);
-            collection.replaceOne(query, document, options);
+            var query = queryBuilder.toFindByIdQuery(request.getPromoId());
+            var update = new Document("$inc", new Document("totalClaims", 1));
+            promoCollection.updateOne(query, update);
         } finally {
-            logDuration("save-promo", start);
+            logDuration("mongo-promo-claim", start);
         }
     }
 
     @Override
+    public void reset(String promoId) {
+        var query = queryBuilder.toFindByIdQuery(promoId);
+        var update = new Document("$set", new Document("totalClaims", 0));
+        promoCollection.updateOne(query, update);
+    }
+
+    @Override
+    public void create(Promo updated) {
+        PromoDocument document = promoConverter.toDocument(updated);
+        promoCollection.insertOne(document);
+    }
+
+    @Override
     public boolean exists(String promoId) {
-        var start = Instant.now();
-        try {
-            Bson query = queryBuilder.toFindByIdQuery(promoId);
-            return collection.countDocuments(query) > 0;
-        } finally {
-            logDuration("promo-exists-by-id", start);
-        }
+        Bson query = queryBuilder.toFindByIdQuery(promoId);
+        return promoCollection.countDocuments(query) > 0;
     }
 
     @Override
@@ -56,17 +61,10 @@ public class MongoPromoRepository implements PromoRepository {
         var start = Instant.now();
         try {
             Bson query = queryBuilder.toFindByIdQuery(promoId);
-            FindIterable<PromoDocument> documents = collection.find(query);
+            FindIterable<PromoDocument> documents = promoCollection.find(query);
             return Optional.ofNullable(documents.first()).map(promoConverter::toPromo);
         } finally {
-            logDuration("find-promo-by-id", start);
-        }
-    }
-
-    private void validateUpdate(Promo existing, Promo updated) {
-        String id = updated.getId();
-        if (existing.getVersion() != updated.getVersion() - 1) {
-            throw new PromoOptimisticLockException(id, existing.getVersion(), updated.getVersion());
+            logDuration("find-promo", start);
         }
     }
 

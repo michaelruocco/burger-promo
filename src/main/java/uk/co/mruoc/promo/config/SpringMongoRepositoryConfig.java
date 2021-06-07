@@ -33,7 +33,7 @@ public class SpringMongoRepositoryConfig {
     public MongoClient mongoClient() {
         var pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
         var codecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
-        MongoClientSettings settings = MongoClientSettings.builder()
+        var settings = MongoClientSettings.builder()
                 .applyConnectionString(CONNECTION_STRING)
                 .codecRegistry(codecRegistry)
                 .build();
@@ -65,18 +65,18 @@ public class SpringMongoRepositoryConfig {
     @Bean
     public PromoRepository mongoPromoRepository(MongoDatabase database) {
         return MongoPromoRepository.builder()
-                .collection(PromoCollection.get(database))
+                .promoCollection(PromoCollection.get(database))
                 .build();
+    }
+
+    private static ConnectionString loadConnectionString() {
+        return new ConnectionString(System.getProperty("spring.data.mongodb.uri"));
     }
 
     private static Mongobee toMongobee(String changeLogPackageName) {
         var runner = new Mongobee(CONNECTION_STRING.getConnectionString());
         runner.setChangeLogsScanPackage(changeLogPackageName);
         return runner;
-    }
-
-    private static ConnectionString loadConnectionString() {
-        return new ConnectionString(System.getProperty("spring.data.mongodb.uri"));
     }
 
 }

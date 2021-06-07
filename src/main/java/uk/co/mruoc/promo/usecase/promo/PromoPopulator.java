@@ -24,7 +24,7 @@ public class PromoPopulator implements ApplicationListener<ContextRefreshedEvent
 
     @Override
     public int getOrder() {
-        return 10;
+        return 20;
     }
 
     private void createIfRequired(Promo promo) {

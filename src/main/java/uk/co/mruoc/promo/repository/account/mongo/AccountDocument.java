@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.codecs.pojo.annotations.BsonId;
 
-import java.util.Collection;
+import java.util.Map;
 
 @Builder
 @Data
@@ -16,7 +16,6 @@ public class AccountDocument {
 
     @BsonId
     private String id;
-    private Collection<String> claimedPromos;
-    private long version;
+    private Map<String, Long> promoClaims;
 
 }

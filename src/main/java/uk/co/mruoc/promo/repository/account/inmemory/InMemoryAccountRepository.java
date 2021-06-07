@@ -2,7 +2,8 @@ package uk.co.mruoc.promo.repository.account.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.co.mruoc.promo.entity.account.Account;
-import uk.co.mruoc.promo.usecase.account.AccountOptimisticLockException;
+import uk.co.mruoc.promo.entity.account.AccountNotFoundException;
+import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.usecase.account.AccountRepository;
 
 import java.util.Collection;
@@ -17,12 +18,24 @@ public class InMemoryAccountRepository implements AccountRepository {
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
 
     @Override
+    public void claim(PromoClaimRequest request) {
+        var account = forceFind(request.getAccountId());
+        account.claim(request.getPromoId());
+    }
+
+    @Override
+    public void resetClaims(String accountId, String promoId) {
+        var account = forceFind(accountId);
+        account.resetClaims(promoId);
+    }
+
+    @Override
     public Optional<Account> find(String id) {
         return Optional.ofNullable(accounts.get(id));
     }
 
     @Override
-    public Stream<Account> findAccountsByClaimedPromo(String promoId) {
+    public Stream<Account> findAccountsWithClaimedPromo(String promoId) {
         return accounts.values().stream().filter(account -> account.hasClaims(promoId));
     }
 
@@ -36,18 +49,12 @@ public class InMemoryAccountRepository implements AccountRepository {
         accountsToSave.forEach(this::save);
     }
 
-    @Override
-    public void save(Account updated) {
-        Optional<Account> existing = find(updated.getId());
-        existing.ifPresent(account -> validateUpdate(account, updated));
+    private void save(Account updated) {
         accounts.put(updated.getId(), updated);
     }
 
-    private void validateUpdate(Account existing, Account updated) {
-        String id = updated.getId();
-        if (existing.getVersion() != updated.getVersion() - 1) {
-            throw new AccountOptimisticLockException(id, existing.getVersion(), updated.getVersion());
-        }
+    private Account forceFind(String accountId) {
+        return find(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
     }
 
 }

@@ -12,7 +12,7 @@ import uk.co.mruoc.promo.entity.account.AccountFactory;
 @Slf4j
 public class AccountPopulator implements ApplicationListener<ContextRefreshedEvent>, Ordered {
 
-    private static final int NUMBER_TO_BUILD = 51000;
+    private static final int NUMBER_TO_BUILD = 250000;
 
     private final AccountFactory factory;
     private final AccountService service;
@@ -28,7 +28,7 @@ public class AccountPopulator implements ApplicationListener<ContextRefreshedEve
 
     @Override
     public int getOrder() {
-        return 20;
+        return 30;
     }
 
 }
