@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoAlreadyExistsException;
+import uk.co.mruoc.promo.entity.promo.PromoAvailability;
+import uk.co.mruoc.promo.entity.promo.PromoAvailabilityNotFoundException;
 import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.entity.promo.PromoNotFoundException;
 
@@ -15,8 +17,7 @@ public class PromoService {
 
     private final PromoRepository repository;
 
-    public void claim(PromoClaimRequest request, Promo promo) {
-        promo.validateFinished();
+    public void claim(PromoClaimRequest request) {
         repository.claim(request);
     }
 
@@ -28,17 +29,21 @@ public class PromoService {
         repository.create(promo);
     }
 
-    public Promo reset(String promoId) {
+    public void reset(String promoId) {
         repository.reset(promoId);
-        return forceFind(promoId);
-    }
-
-    public Promo forceFind(String promoId) {
-        return find(promoId).orElseThrow(() -> new PromoNotFoundException(promoId));
     }
 
     public Optional<Promo> find(String promoId) {
         return repository.find(promoId);
+    }
+
+    public Promo forceFind(String promoId) {
+        return find(promoId).orElseThrow(() -> new PromoNotFoundException(promoId) );
+    }
+
+    public PromoAvailability findAvailability(PromoClaimRequest request) {
+        return repository.findAvailability(request)
+                .orElseThrow(() -> new PromoAvailabilityNotFoundException(request.getPromoId(), request.getAccountId()));
     }
 
 }

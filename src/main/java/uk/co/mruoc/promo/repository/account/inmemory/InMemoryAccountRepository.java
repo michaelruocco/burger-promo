@@ -10,33 +10,34 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class InMemoryAccountRepository implements AccountRepository {
 
     private final Map<String, Account> accounts = new ConcurrentHashMap<>();
 
-    @Override
+    public AtomicLong findClaimsCount(PromoClaimRequest request) {
+        return find(request.getAccountId())
+                .map(account -> account.getClaimsCount(request.getPromoId()))
+                .orElse(new AtomicLong());
+    }
+
     public void claim(PromoClaimRequest request) {
-        var account = forceFind(request.getAccountId());
+        var accountId = request.getAccountId();
+        var account = find(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
         account.claim(request.getPromoId());
     }
 
-    @Override
-    public void resetClaims(String accountId, String promoId) {
-        var account = forceFind(accountId);
-        account.resetClaims(promoId);
+    public void resetPromo(String promoId) {
+        accounts.values().stream()
+                .filter(account -> account.hasClaims(promoId))
+                .forEach(account -> account.resetClaims(promoId));
     }
 
     @Override
     public Optional<Account> find(String id) {
         return Optional.ofNullable(accounts.get(id));
-    }
-
-    @Override
-    public Stream<Account> findAccountsWithClaimedPromo(String promoId) {
-        return accounts.values().stream().filter(account -> account.hasClaims(promoId));
     }
 
     @Override
@@ -51,10 +52,6 @@ public class InMemoryAccountRepository implements AccountRepository {
 
     private void save(Account updated) {
         accounts.put(updated.getId(), updated);
-    }
-
-    private Account forceFind(String accountId) {
-        return find(accountId).orElseThrow(() -> new AccountNotFoundException(accountId));
     }
 
 }

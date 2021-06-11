@@ -65,7 +65,7 @@ public class SpringMongoRepositoryConfig {
     @Bean
     public PromoRepository mongoPromoRepository(MongoDatabase database) {
         return MongoPromoRepository.builder()
-                .promoCollection(PromoCollection.get(database))
+                .collection(PromoCollection.get(database))
                 .build();
     }
 

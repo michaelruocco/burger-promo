@@ -6,4 +6,8 @@ public class AccountNotFoundException extends RuntimeException {
         super(String.format("account %s not found", id));
     }
 
+    public AccountNotFoundException(Throwable cause) {
+        super(cause);
+    }
+
 }

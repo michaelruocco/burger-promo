@@ -25,8 +25,8 @@ public class SpringStubbedRepositoryConfig {
     }
 
     @Bean
-    public PromoRepository inMemoryPromoRepository() {
-        return new InMemoryPromoRepository();
+    public PromoRepository inMemoryPromoRepository(InMemoryAccountRepository accountRepository) {
+        return new InMemoryPromoRepository(accountRepository);
     }
 
 }

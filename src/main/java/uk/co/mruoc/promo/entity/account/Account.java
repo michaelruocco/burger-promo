@@ -26,11 +26,11 @@ public class Account {
     }
 
     public boolean hasClaims(String promoId) {
-        return getClaimsCount(promoId) > 0;
+        return getClaimsCount(promoId).get() > 0;
     }
 
-    public long getClaimsCount(String promoId) {
-        return getAtomicClaimsCount(promoId).get();
+    public AtomicLong getClaimsCount(String promoId) {
+        return getAtomicClaimsCount(promoId);
     }
 
     private AtomicLong getAtomicClaimsCount(String promoId) {

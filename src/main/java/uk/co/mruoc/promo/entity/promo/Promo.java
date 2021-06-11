@@ -22,13 +22,21 @@ public class Promo {
     @Builder.Default
     private final AtomicLong totalClaims = new AtomicLong();
 
-    public boolean isFinished() {
-        return totalClaims.get() >= totalAllowedClaims;
+    public void claim() {
+        totalClaims.incrementAndGet();
+    }
+
+    public void reset() {
+        totalClaims.set(0);
     }
 
     public long getRemaining() {
         long remaining = totalAllowedClaims - totalClaims.get();
         return Math.max(remaining, 0);
+    }
+
+    public boolean isFinished() {
+        return getRemaining() <= 0;
     }
 
     public void validateFinished() {
