@@ -30,7 +30,7 @@ class RepositoryPerformanceTest {
 
     private static final String PROMO_ID = "free-burgers";
     private static final PromoClaimRequestBuilder REQUEST_BUILDER = PromoClaimRequest.builder().promoId(PROMO_ID);
-    private static final int NUMBER_OF_ACCOUNTS = 10000;
+    private static final int NUMBER_OF_ACCOUNTS = 100000;
 
     @ParameterizedTest
     @MethodSource("provideRepositoryConfigs")
@@ -62,8 +62,8 @@ class RepositoryPerformanceTest {
             log.info("promo took {}ms", Duration.between(start, Instant.now()).toMillis());
             executorService.shutdown();
 
-            log.info("read average {}ms {}", readStats.getAverage(), readStats);
-            log.info("update average {}ms {}", updateStats.getAverage(), updateStats);
+            log.info("read{}", readStats.getMessage());
+            log.info("update{}", updateStats.getMessage());
 
             var promo = promoRepository.find(PROMO_ID);
             log.info("final promo {}", promo);
@@ -77,8 +77,8 @@ class RepositoryPerformanceTest {
     private static Stream<Arguments> provideRepositoryConfigs() {
         return Stream.of(
                 Arguments.of(new StubbedRepositoryConfig()),
-                Arguments.of(new MysqlRepositoryConfig()),
-                Arguments.of(new MongoRepositoryConfig())
+                Arguments.of(new MysqlRepositoryConfig())//,
+                //Arguments.of(new MongoRepositoryConfig())
         );
     }
 

@@ -1,10 +1,10 @@
 package uk.co.mruoc.promo.repository.promo.mysql;
 
 import lombok.RequiredArgsConstructor;
-import uk.co.mruoc.promo.entity.account.AccountNotFoundException;
 import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoAvailability;
 import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
+import uk.co.mruoc.promo.usecase.UnexpectedErrorException;
 import uk.co.mruoc.promo.usecase.promo.PromoRepository;
 
 import javax.sql.DataSource;
@@ -32,24 +32,24 @@ public class MysqlPromoRepository implements PromoRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
+            throw new UnexpectedErrorException(e);
         }
     }
 
     @Override
     public Optional<Promo> find(String promoId) {
         try (var connection = dataSource.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT promo.claims_allowed_per_account, promo.total_claims, promo.total_allowed_claims FROM promo WHERE promo.id = ?;")) {
+            try (var statement = connection.prepareStatement("CALL get_promo(?);")) {
                 statement.setString(1, promoId);
                 try (var resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
-                        return findPromo(promoId);
+                        return Optional.of(toPromo(promoId, resultSet));
                     }
                     return Optional.empty();
                 }
             }
         } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
+            throw new UnexpectedErrorException(e);
         }
     }
 
@@ -66,7 +66,7 @@ public class MysqlPromoRepository implements PromoRepository {
                 }
             }
         } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
+            throw new UnexpectedErrorException(e);
         }
     }
 
@@ -79,7 +79,7 @@ public class MysqlPromoRepository implements PromoRepository {
                 statement.execute();
             }
         } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
+            throw new UnexpectedErrorException(e);
         }
     }
 
@@ -91,7 +91,7 @@ public class MysqlPromoRepository implements PromoRepository {
                 statement.execute();
             }
         } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
+            throw new UnexpectedErrorException(e);
         }
     }
 
@@ -103,38 +103,21 @@ public class MysqlPromoRepository implements PromoRepository {
                 statement.execute();
             }
         } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
+            throw new UnexpectedErrorException(e);
         }
     }
 
     @Override
     public void create(Promo promo) {
         try (var connection = dataSource.getConnection()) {
-            try (var statement = connection.prepareStatement("INSERT INTO promo (id, claims_allowed_per_account, total_allowed_claims, total_claims) VALUES (?, ?, ?, ?)")) {
+            try (var statement = connection.prepareStatement("INSERT INTO promo (id, claims_allowed_per_account, total_allowed_claims) VALUES (?, ?, ?)")) {
                 statement.setString(1, promo.getId());
                 statement.setLong(2, promo.getClaimsAllowedPerAccount());
                 statement.setLong(3, promo.getTotalAllowedClaims());
-                statement.setLong(4, promo.getTotalClaims().get());
                 statement.execute();
             }
         } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
-        }
-    }
-
-    private Optional<Promo> findPromo(String id) {
-        try (var connection = dataSource.getConnection()) {
-            try (var statement = connection.prepareStatement("SELECT claims_allowed_per_account, total_allowed_claims, total_claims FROM promo WHERE id = ?")) {
-                statement.setString(1, id);
-                try (var resultSet = statement.executeQuery()) {
-                    if (resultSet.next()) {
-                        return Optional.of(toPromo(id, resultSet));
-                    }
-                    return Optional.empty();
-                }
-            }
-        } catch (SQLException e) {
-            throw new AccountNotFoundException(e);
+            throw new UnexpectedErrorException(e);
         }
     }
 
