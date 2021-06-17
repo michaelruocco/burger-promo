@@ -4,12 +4,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import uk.co.mruoc.promo.entity.account.AccountFactory;
 import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.entity.promo.PromoClaimRequest.PromoClaimRequestBuilder;
 import uk.co.mruoc.promo.entity.promo.PromoFactory;
+import uk.co.mruoc.promo.repository.mongo.LocalDockerMongo;
 import uk.co.mruoc.promo.repository.mongo.MongoRepositoryConfig;
+import uk.co.mruoc.promo.repository.mysql.LocalDockerMysql;
 import uk.co.mruoc.promo.repository.mysql.MysqlRepositoryConfig;
 import uk.co.mruoc.promo.repository.stubbed.StubbedRepositoryConfig;
 import uk.co.mruoc.promo.usecase.account.AccountRepository;
@@ -25,12 +29,19 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 @Slf4j
 class RepositoryPerformanceTest {
 
     private static final String PROMO_ID = "free-burgers";
     private static final PromoClaimRequestBuilder REQUEST_BUILDER = PromoClaimRequest.builder().promoId(PROMO_ID);
-    private static final int NUMBER_OF_ACCOUNTS = 100000;
+    private static final int NUMBER_OF_ACCOUNTS = 1000;
+
+    @Container
+    private static final LocalDockerMysql mysql = new LocalDockerMysql();
+
+    @Container
+    private static final LocalDockerMongo mongo = new LocalDockerMongo();
 
     @ParameterizedTest
     @MethodSource("provideRepositoryConfigs")
@@ -77,8 +88,8 @@ class RepositoryPerformanceTest {
     private static Stream<Arguments> provideRepositoryConfigs() {
         return Stream.of(
                 Arguments.of(new StubbedRepositoryConfig()),
-                Arguments.of(new MysqlRepositoryConfig())//,
-                //Arguments.of(new MongoRepositoryConfig())
+                Arguments.of(new MysqlRepositoryConfig(mysql.getDataSource())),
+                Arguments.of(new MongoRepositoryConfig(mongo.getDatabase(MongoRepositoryConfig.buildCodecRegistry())))
         );
     }
 

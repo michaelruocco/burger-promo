@@ -104,6 +104,7 @@ dependencies {
     integrationTestImplementation "org.testcontainers:junit-jupiter:1.15.3"
     integrationTestImplementation "org.awaitility:awaitility:4.1.0"
     integrationTestImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
+    integrationTestImplementation "org.flywaydb:flyway-core:7.10.0"
 }
 
 springBoot {

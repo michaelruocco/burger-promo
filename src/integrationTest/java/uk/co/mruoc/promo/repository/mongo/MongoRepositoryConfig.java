@@ -22,10 +22,6 @@ public class MongoRepositoryConfig implements RepositoryConfig {
     private final AccountRepository accountRepository;
     private final PromoRepository promoRepository;
 
-    public MongoRepositoryConfig() {
-        this(new LocalMongo().getDatabase(buildCodecRegistry()));
-    }
-
     public MongoRepositoryConfig(MongoDatabase database) {
         this(database, toAccountRepository(database));
     }
@@ -44,7 +40,7 @@ public class MongoRepositoryConfig implements RepositoryConfig {
         return promoRepository;
     }
 
-    private static CodecRegistry buildCodecRegistry() {
+    public static CodecRegistry buildCodecRegistry() {
         var pojoCodecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
         return fromRegistries(MongoClientSettings.getDefaultCodecRegistry(), pojoCodecRegistry);
     }

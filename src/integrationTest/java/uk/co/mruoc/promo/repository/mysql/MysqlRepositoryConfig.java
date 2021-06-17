@@ -15,10 +15,6 @@ public class MysqlRepositoryConfig implements RepositoryConfig {
     private final MysqlAccountRepository accountRepository;
     private final MysqlPromoRepository promoRepository;
 
-    public MysqlRepositoryConfig() {
-        this(new LocalMysql().getDataSource());
-    }
-
     public MysqlRepositoryConfig(DataSource dataSource) {
         this(toAccountRepository(dataSource), toPromoRepository(dataSource));
     }

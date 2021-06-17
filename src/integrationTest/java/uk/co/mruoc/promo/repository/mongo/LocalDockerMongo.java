@@ -21,7 +21,6 @@ public class LocalDockerMongo extends GenericContainer<LocalDockerMongo> {
     private static final String USERNAME = "promo-user";
     private static final String PASSWORD = "welcome01";
     private static final String DATABASE = "promo-local";
-
     private static final int PORT = 27017;
 
     public LocalDockerMongo() {
@@ -35,15 +34,15 @@ public class LocalDockerMongo extends GenericContainer<LocalDockerMongo> {
     }
 
     public MongoDatabase getDatabase(CodecRegistry codecRegistry) {
-        log.info("starting mongo...");
+        log.info("waiting for mongo to start...");
         waitForStartupToComplete();
         log.info("mongo startup complete");
-            var settings = MongoClientSettings.builder()
-                    .applyConnectionString(getConnectionString())
-                    .codecRegistry(codecRegistry)
-                    .build();
-            var client = MongoClients.create(settings);
-            return client.getDatabase(DATABASE);
+        var settings = MongoClientSettings.builder()
+                .applyConnectionString(getConnectionString())
+                .codecRegistry(codecRegistry)
+                .build();
+        var client = MongoClients.create(settings);
+        return client.getDatabase(DATABASE);
     }
 
     private void waitForStartupToComplete() {
