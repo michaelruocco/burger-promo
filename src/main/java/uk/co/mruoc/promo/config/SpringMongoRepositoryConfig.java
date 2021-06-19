@@ -24,7 +24,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Configuration
-@Profile("!stubbed")
+@Profile("mongo")
 public class SpringMongoRepositoryConfig {
 
     private static final ConnectionString CONNECTION_STRING = loadConnectionString();

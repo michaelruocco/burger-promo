@@ -7,10 +7,6 @@ import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.usecase.account.AccountService;
 import uk.co.mruoc.promo.usecase.promo.PromoService;
 
-import java.time.Instant;
-
-import static uk.co.mruoc.duration.logger.MongoMdcDurationLoggerUtils.logDuration;
-
 @Builder
 @Slf4j
 public class PromoClaimService {
@@ -19,23 +15,13 @@ public class PromoClaimService {
     private final AccountService accountService;
 
     public void claim(PromoClaimRequest request) {
-        var start = Instant.now();
-        try {
-            validateAvailable(request);
-            promoService.claim(request);
-        } finally {
-            logDuration("service-claim", start);
-        }
+        validateAvailable(request);
+        promoService.claim(request);
     }
 
     public void validateAvailable(PromoClaimRequest request) {
-        var start = Instant.now();
-        try {
-            var availability = promoService.findAvailability(request);
-            availability.validateAvailable();
-        } finally {
-            logDuration("check-available", start);
-        }
+        var availability = promoService.findAvailability(request);
+        availability.validateAvailable();
     }
 
     public Promo reset(String promoId) {

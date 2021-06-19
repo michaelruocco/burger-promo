@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.co.mruoc.promo.entity.account.Account;
 import uk.co.mruoc.promo.usecase.account.AccountService;
 
+import java.time.Instant;
+
+import static uk.co.mruoc.duration.logger.MongoMdcDurationLoggerUtils.logDuration;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +24,12 @@ public class AccountController {
 
     @GetMapping("/{accountId}")
     public Account getAccount(@PathVariable("accountId") String accountId) {
-        return service.forceFind(accountId);
+        var start = Instant.now();
+        try {
+            return service.forceFind(accountId);
+        } finally {
+            logDuration("get-account", start);
+        }
     }
 
 }

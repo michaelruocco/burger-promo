@@ -3,8 +3,11 @@ spring:
     name: burger-promo
   main:
     banner-mode: off
-  jpa:
-    hibernate.ddl-auto: update
+  datasource:
+    url: jdbc:mysql://localhost:3306/promo
+    username: root
+    password: welcome
+    driver-class-name: com.mysql.cf.jdbc.Driver
 
 info:
   app:

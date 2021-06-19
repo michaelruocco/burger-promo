@@ -10,7 +10,10 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,7 +27,10 @@ public class MysqlAccountRepository implements AccountRepository  {
             try (var statement = connection.prepareStatement("SELECT id FROM account WHERE id = ?")) {
                 statement.setString(1, id);
                 try (var resultSet = statement.executeQuery()) {
-                    return toAccount(resultSet);
+                    if (resultSet.next()) {
+                        return Optional.of(loadAccountClaims(resultSet));
+                    }
+                    return Optional.empty();
                 }
             }
         } catch (SQLException e) {
@@ -43,13 +49,11 @@ public class MysqlAccountRepository implements AccountRepository  {
                     statement.addBatch();
                     batchCount++;
                     if (batchCount % 1000 == 0) {
-                        log.info("executing batch {}", batchCount);
                         statement.executeBatch();
                         batchCount = 0;
                     }
                 }
                 if (batchCount > 0) {
-                    log.info("executing batch {}", batchCount);
                     statement.executeBatch();
                 }
             }
@@ -69,13 +73,29 @@ public class MysqlAccountRepository implements AccountRepository  {
         }
     }
 
-    private static Optional<Account> toAccount(ResultSet resultSet) throws SQLException {
-        if (!resultSet.isBeforeFirst()) {
-            return Optional.empty();
+    private Map<String, AtomicLong> loadAccountPromoClaims(String accountId) {
+        try(var connection = dataSource.getConnection()) {
+            try (var statement = connection.prepareStatement("SELECT promo_id, claims FROM account_claim WHERE account_id = ?")) {
+                statement.setString(1, accountId);
+                try (var resultSet = statement.executeQuery()) {
+                    Map<String, AtomicLong> accountClaims = new ConcurrentHashMap<>();
+                    while (resultSet.next()) {
+                        accountClaims.put(resultSet.getString("promo_id"), new AtomicLong(resultSet.getLong("claims")));
+                    }
+                    return accountClaims;
+                }
+            }
+        } catch (SQLException e) {
+            throw new AccountNotFoundException(e);
         }
-        return Optional.of(Account.builder()
-                .id(resultSet.getString("id"))
-                .build());
+    }
+
+    private Account loadAccountClaims(ResultSet resultSet) throws SQLException {
+        var accountId = resultSet.getString("id");
+        return Account.builder()
+                .id(accountId)
+                .promoClaims(loadAccountPromoClaims(accountId))
+                .build();
     }
 
 }

@@ -26,9 +26,10 @@ public class MysqlPromoRepository implements PromoRepository {
                 statement.setString(2, request.getAccountId());
                 try (var resultSet = statement.executeQuery()) {
                     if (resultSet.next()) {
-                        return toPromoAvailability(request, resultSet);
+                        return Optional.of(toPromoAvailability(request, resultSet));
                     }
-                    return Optional.empty();
+                    return find(request.getPromoId())
+                            .map(promo -> toPromoAvailability(promo, request.getAccountId()));
                 }
             }
         } catch (SQLException e) {
@@ -110,10 +111,11 @@ public class MysqlPromoRepository implements PromoRepository {
     @Override
     public void create(Promo promo) {
         try (var connection = dataSource.getConnection()) {
-            try (var statement = connection.prepareStatement("INSERT INTO promo (id, claims_allowed_per_account, total_allowed_claims) VALUES (?, ?, ?)")) {
+            try (var statement = connection.prepareStatement("INSERT INTO promo (id, allowed_claims_per_account, allowed_claims_total, claims) VALUES (?, ?, ?, ?)")) {
                 statement.setString(1, promo.getId());
                 statement.setLong(2, promo.getClaimsAllowedPerAccount());
                 statement.setLong(3, promo.getTotalAllowedClaims());
+                statement.setLong(4, promo.getTotalClaims().get());
                 statement.execute();
             }
         } catch (SQLException e) {
@@ -121,18 +123,27 @@ public class MysqlPromoRepository implements PromoRepository {
         }
     }
 
-    private static Optional<PromoAvailability> toPromoAvailability(PromoClaimRequest request, ResultSet resultSet) throws SQLException {
-        return Optional.of(PromoAvailability.builder()
+    private static PromoAvailability toPromoAvailability(PromoClaimRequest request, ResultSet resultSet) throws SQLException {
+        return PromoAvailability.builder()
+                .promo(toPromo(request.getPromoId(), resultSet))
                 .accountId(request.getAccountId())
                 .accountClaims(new AtomicLong(resultSet.getLong("account_claims")))
-                .build());
+                .build();
+    }
+
+    private static PromoAvailability toPromoAvailability(Promo promo, String accountId) {
+        return PromoAvailability.builder()
+                .promo(promo)
+                .accountId(accountId)
+                .accountClaims(new AtomicLong())
+                .build();
     }
 
     private static Promo toPromo(String id, ResultSet resultSet) throws SQLException {
         return Promo.builder()
                 .id(id)
-                .claimsAllowedPerAccount(resultSet.getLong("claims_allowed_per_account"))
-                .totalAllowedClaims(resultSet.getLong("total_allowed_claims"))
+                .claimsAllowedPerAccount(resultSet.getLong("allowed_claims_per_account"))
+                .totalAllowedClaims(resultSet.getLong("allowed_claims_total"))
                 .totalClaims(new AtomicLong(resultSet.getLong("total_claims")))
                 .build();
     }

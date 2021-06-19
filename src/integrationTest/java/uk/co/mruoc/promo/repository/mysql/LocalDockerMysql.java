@@ -39,7 +39,7 @@ public class LocalDockerMysql extends GenericContainer<LocalDockerMysql> {
         String url = getUrl();
 
         Flyway.configure()
-                .locations("db/migrations")
+                .locations("db/migration")
                 .dataSource(url, "root", PASSWORD)
                 .load()
                 .migrate();

@@ -1,12 +1,23 @@
 CREATE TABLE IF NOT EXISTS promo(
     id VARCHAR(255) PRIMARY KEY,
-    claims_allowed_per_account INT,
-    total_allowed_claims INT
+    allowed_claims_total INT,
+    allowed_claims_per_account INT,
+    claims INT
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS account(
    	id VARCHAR(255) PRIMARY KEY
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS promo_claim(
+   	claim_number int PRIMARY KEY AUTO_INCREMENT,
+   	promo_id VARCHAR(255),
+	FOREIGN KEY(promo_id)
+        REFERENCES promo(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX promo_claim_promo_id_index ON promo_claim(promo_id);
 
 CREATE TABLE IF NOT EXISTS account_claim(
    	promo_id VARCHAR(255),
@@ -20,14 +31,3 @@ CREATE TABLE IF NOT EXISTS account_claim(
         REFERENCES account(id)
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
-CREATE TABLE IF NOT EXISTS promo_claim(
-   	claim_number int PRIMARY KEY AUTO_INCREMENT,
-   	promo_id VARCHAR(255),
-   	claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY(promo_id)
-        REFERENCES promo(id)
-        ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-CREATE INDEX claim_promo_id_index ON promo_claim(promo_id);
