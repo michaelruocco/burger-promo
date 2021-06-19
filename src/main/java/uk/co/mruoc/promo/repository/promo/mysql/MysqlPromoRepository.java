@@ -1,5 +1,12 @@
 package uk.co.mruoc.promo.repository.promo.mysql;
 
+import com.mysql.cj.jdbc.exceptions.MySQLTransactionRollbackException;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
+import io.github.resilience4j.timelimiter.TimeLimiter;
+import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import io.github.resilience4j.timelimiter.TimeLimiterRegistry;
 import lombok.RequiredArgsConstructor;
 import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoAvailability;
@@ -10,13 +17,24 @@ import uk.co.mruoc.promo.usecase.promo.PromoRepository;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 @RequiredArgsConstructor
 public class MysqlPromoRepository implements PromoRepository {
 
     private final DataSource dataSource;
+    private final TimeLimiter timeLimiter;
+    private final Retry retry;
+    private final Executor executor = Executors.newFixedThreadPool(50);
+
+    public MysqlPromoRepository(DataSource dataSource) {
+        this(dataSource, buildTimeLimiter(), buildRetry());
+    }
 
     @Override
     public Optional<PromoAvailability> findAvailability(PromoClaimRequest request) {
@@ -73,13 +91,10 @@ public class MysqlPromoRepository implements PromoRepository {
 
     @Override
     public void claim(PromoClaimRequest request) {
-        try (var connection = dataSource.getConnection()) {
-            try (var statement = connection.prepareStatement("CALL claim_promo(?, ?)")) {
-                statement.setString(1, request.getPromoId());
-                statement.setString(2, request.getAccountId());
-                statement.execute();
-            }
-        } catch (SQLException e) {
+        try {
+            var claimPromo = Retry.decorateRunnable(retry, () -> runClaimPromo(request));
+            timeLimiter.executeFutureSupplier(() -> CompletableFuture.runAsync(claimPromo, executor));
+        } catch (Exception e) {
             throw new UnexpectedErrorException(e);
         }
     }
@@ -121,6 +136,38 @@ public class MysqlPromoRepository implements PromoRepository {
         } catch (SQLException e) {
             throw new UnexpectedErrorException(e);
         }
+    }
+
+    private void runClaimPromo(PromoClaimRequest request) {
+        try (var connection = dataSource.getConnection()) {
+            try (var statement = connection.prepareStatement("CALL claim_promo(?, ?)")) {
+                statement.setString(1, request.getPromoId());
+                statement.setString(2, request.getAccountId());
+                statement.execute();
+            }
+        } catch (MySQLTransactionRollbackException e) {
+            throw new TransactionRollbackException(e);
+        } catch (SQLException e) {
+            throw new UnexpectedErrorException(e);
+        }
+    }
+
+    private static TimeLimiter buildTimeLimiter() {
+        TimeLimiterConfig config = TimeLimiterConfig.custom()
+                .cancelRunningFuture(true)
+                .timeoutDuration(Duration.ofMillis(1000))
+                .build();
+        return TimeLimiterRegistry.of(config).timeLimiter("claim-promo-time-limiter");
+    }
+
+    private static Retry buildRetry() {
+        RetryConfig config = RetryConfig.custom()
+                .maxAttempts(3)
+                .waitDuration(Duration.ofMillis(250))
+                .retryExceptions(TransactionRollbackException.class)
+                .ignoreExceptions(UnexpectedErrorException.class)
+                .build();
+        return RetryRegistry.of(config).retry("claim-promo-retry", config);
     }
 
     private static PromoAvailability toPromoAvailability(PromoClaimRequest request, ResultSet resultSet) throws SQLException {

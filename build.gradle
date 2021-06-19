@@ -94,6 +94,8 @@ dependencies {
     implementation "com.zaxxer:HikariCP:4.0.3"
     implementation "org.flywaydb:flyway-core:7.10.0"
     implementation "org.springframework:spring-jdbc:5.3.8"
+    implementation "io.github.resilience4j:resilience4j-timelimiter:1.7.0"
+    implementation "io.github.resilience4j:resilience4j-retry:1.7.0"
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"

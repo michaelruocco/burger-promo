@@ -14,7 +14,6 @@ import uk.co.mruoc.promo.usecase.account.AccountRepository;
 import uk.co.mruoc.promo.usecase.promo.PromoRepository;
 
 import javax.sql.DataSource;
-import java.time.Duration;
 import java.util.Optional;
 
 @Configuration
@@ -42,7 +41,7 @@ public class SpringMysqlRepositoryConfig {
         config.setUsername(loadMysqlUsername());
         config.setPassword(loadMysqlPassword());
         config.setMaximumPoolSize(50);
-        config.setConnectionTimeout(2500);
+        config.setConnectionTimeout(500);
         return new HikariDataSource(config);
     }
 
