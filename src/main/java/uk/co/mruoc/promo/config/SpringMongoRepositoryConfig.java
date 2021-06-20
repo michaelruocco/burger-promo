@@ -7,6 +7,9 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -16,7 +19,6 @@ import uk.co.mruoc.promo.repository.account.mongo.MongoAccountRepository;
 import uk.co.mruoc.promo.repository.promo.mongo.MongoPromoRepository;
 import uk.co.mruoc.promo.repository.promo.mongo.PromoCollection;
 import uk.co.mruoc.promo.repository.promo.mongo.PromoMongobeeChangelog;
-import uk.co.mruoc.promo.usecase.account.AccountRepository;
 import uk.co.mruoc.promo.usecase.promo.PromoRepository;
 
 import static java.util.Objects.requireNonNull;
@@ -25,6 +27,10 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Configuration
 @Profile("mongo")
+@EnableAutoConfiguration(exclude = {
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class
+})
 public class SpringMongoRepositoryConfig {
 
     private static final ConnectionString CONNECTION_STRING = loadConnectionString();
@@ -56,16 +62,17 @@ public class SpringMongoRepositoryConfig {
     }
 
     @Bean
-    public AccountRepository mongoAccountRepository(MongoDatabase database) {
+    public MongoAccountRepository mongoAccountRepository(MongoDatabase database) {
         return MongoAccountRepository.builder()
                 .collection(AccountCollection.get(database))
                 .build();
     }
 
     @Bean
-    public PromoRepository mongoPromoRepository(MongoDatabase database) {
+    public PromoRepository mongoPromoRepository(MongoDatabase database, MongoAccountRepository accountRepository) {
         return MongoPromoRepository.builder()
                 .collection(PromoCollection.get(database))
+                .accountRepository(accountRepository)
                 .build();
     }
 

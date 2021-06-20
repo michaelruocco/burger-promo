@@ -7,7 +7,9 @@ spring:
     url: jdbc:mysql://localhost:3306/promo
     username: root
     password: welcome
-    driver-class-name: com.mysql.cf.jdbc.Driver
+    hikari:
+      maximumPoolSize: 50
+      connectionTimeout: 500
 
 info:
   app:
