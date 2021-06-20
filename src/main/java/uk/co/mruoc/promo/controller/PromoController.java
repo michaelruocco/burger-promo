@@ -13,9 +13,7 @@ import uk.co.mruoc.promo.entity.promo.Promo;
 import uk.co.mruoc.promo.entity.promo.PromoClaimRequest;
 import uk.co.mruoc.promo.usecase.PromoFacade;
 
-import java.time.Instant;
 
-import static uk.co.mruoc.duration.logger.MongoMdcDurationLoggerUtils.logDuration;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,48 +25,28 @@ public class PromoController {
 
     @GetMapping("/{promoId}")
     public Promo getPromo(@PathVariable("promoId") String promoId) {
-        var start = Instant.now();
-        try {
-            return promoFacade.find(promoId);
-        } finally {
-            logDuration("get-promo", start);
-        }
+        return promoFacade.find(promoId);
     }
 
     @PutMapping("/{promoId}")
     public Promo resetPromo(@PathVariable("promoId") String promoId) {
-        var start = Instant.now();
-        try {
-            return promoFacade.reset(promoId);
-        } finally {
-            logDuration("reset-promo", start);
-        }
+        return promoFacade.reset(promoId);
     }
 
     @GetMapping("/{promoId}/accounts/{accountId}")
     public ResponseEntity<Void> isAvailable(@PathVariable("promoId") String promoId,
                                             @PathVariable("accountId") String accountId) {
-        //var start = Instant.now();
-        //try {
-            PromoClaimRequest request = toRequest(promoId, accountId);
-            promoFacade.validateAvailable(request);
-            return ResponseEntity.ok().build();
-        //} finally {
-        //    logDuration("check-promo-available", start);
-        //}
+        PromoClaimRequest request = toRequest(promoId, accountId);
+        promoFacade.validateAvailable(request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{promoId}/accounts/{accountId}")
     public ResponseEntity<Void> claim(@PathVariable("promoId") String promoId,
                                       @PathVariable("accountId") String accountId) {
-        //var start = Instant.now();
-        //try {
-            PromoClaimRequest request = toRequest(promoId, accountId);
-            promoFacade.claim(request);
-            return ResponseEntity.accepted().build();
-        //} finally {
-        //    logDuration("claim-promo", start);
-        //}
+        PromoClaimRequest request = toRequest(promoId, accountId);
+        promoFacade.claim(request);
+        return ResponseEntity.accepted().build();
     }
 
     private static PromoClaimRequest toRequest(String promoId, String accountId) {
