@@ -35,19 +35,16 @@ Build code and docker image:
 ./gradlew clean currentVersion dependencyUpdates spotlessApply build buildImage
 ```
 
-
 Run service with persistence stubbed with using in memory repository implementation:
 ```gradle
 ./gradlew bootRun
 ```
-
 
 Run service within docker image using mongo repository implementation:
 ```gradle
 ./gradlew clean spotlessApply build buildImage composeUp
 ```
 And `./gradlew composeDown` to tear down the containers again afterwards
-
 
 Run performance test with more than one attempt per account:
 ```jmeter
@@ -60,7 +57,6 @@ jmeter --nongui \
        --reportatendofloadtests \
        --reportoutputfolder build/reports/jmeter/html
 ```
-
 
 Run simple performance test with account numbers unique and incrementing sequentially throughout test:
 ```jmeter
