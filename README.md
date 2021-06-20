@@ -20,7 +20,6 @@ once per account and has a max number of claims available.
 
 *   Setup promo cache update event on create promo
 *   Delete promo cache update event on delete promo
-*   Add retry logic on claim if deadlock occurs? `Caused by: com.mysql.cj.jdbc.exceptions.MySQLTransactionRollbackException: Deadlock found when trying to get lock; try restarting transaction`
 
 ## Useful Commands
 
